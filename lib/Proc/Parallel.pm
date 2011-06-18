@@ -10,7 +10,7 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 our @EXPORT = qw(start_command finish_commands);
-our $VERSION = 0.4;
+our $VERSION = 0.5;
 
 my %running;
 
@@ -78,7 +78,9 @@ so this module is not safe to use with other L<Event>-based code.
 
 The commands are started as you call C<startcommand()>, but no output
 will be processed unless you call C<IO::Event::loop()> or let 
-C<finish_commands()> call it for you.
+C<finish_commands()> call it for you.  The call to C<finish_commands()>
+or C<IO::Event::loop()> returns when all the commands have completed.
+Additional commands may be started after calling C<finish_commands()>.
 
 In addition to the command to run, the C<startcommand()> function takes
 two L<IO::Event>-style callbacks: one that's called for each line of
@@ -92,6 +94,8 @@ output and one that's called when at end-of-file.
 		# do suff for each line
 	}
  });
+
+ finish_commands();
 
 =head1 LICENSE
 

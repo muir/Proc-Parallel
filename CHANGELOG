@@ -1,4 +1,14 @@
 
+= 2011/06/15 - 0.5
+
+Added toworker.t regression test.
+
+RPC::ToWorker data element is now optional and can be 
+a plain scalar.  It used to have to be a reference but
+that was not documented.
+
+Additional documentation.
+
 = 2009/08/03 - 0.4
 
 Moved Proc::Parallel::HostsCommand into do.hosts and

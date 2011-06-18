@@ -189,7 +189,7 @@ __END__
 	--name		In command, replace =HOSTNAME= with the remote system name 
 	--raw		Do not tag command output with hostnames
 	--help		Display this message
-	--33		Run at most 33 simultaneous commands (start more as others finish)
+	--NUM		Run at most NUM simultaneous commands (start more as others finish)
 
 =head1 DESCRIPTION
 
@@ -226,6 +226,9 @@ look in the current directory for it.
 
 =head1 LICENSE
 
+Copyright (C) 2007-2008 SearchMe, Inc.
+Copyright (C) 2008-2010 David Sharnoff
+Copyright (C) 2011 Google, Inc.
 This package may be used and redistributed under the terms of either
 the Artistic 2.0 or LGPL 2.1 license.
 

@@ -8,6 +8,11 @@ WriteMakefile(
 	'AUTHOR'   => 'David Muir Sharnoff <muir@idiom.org>',
 	'dist' => { COMPRESS=>"gzip", SUFFIX=>"gz" },
 	'EXE_FILES' => [ 'bin/do.hosts', 'bin/rkill' ],
+	META_MERGE     => {
+		resources  => {
+			repository => 'http://github.com/muir/Proc-Parallel',
+		}
+	},
 	'PREREQ_PM'	=> {
 		'IO::Event'			=> 0.704,
 		'File::Slurp::Remote'		=> 0,

@@ -18,6 +18,8 @@ use Scalar::Util qw(refaddr weaken);
 use Time::HiRes qw(time);
 require POSIX;
 
+our $VERSION = 0.5;
+
 our @EXPORT = qw(do_remote_job);
 our @ISA = qw(Exporter);
 
@@ -188,7 +190,7 @@ sub do_remote_job
 			exec $command
 				or die "exec $command: $!";
 		} else {
-			exec 'ssh', $host, '-o', 'StrictHostKeyChecking=no', $command,
+			exec 'ssh', $host, '-o', 'StrictHostKeyChecking=no', '-o', 'BatchMode=yes', $command,
 				or do { 
 					$params{failure}->("exec ssh $host $command: $!");
 					return;
@@ -341,8 +343,9 @@ END_SLAVE1
 
 		\$0 = $q_perl{$av0} . 'reconstituting initial data';
 
-		my \$data = thaw(\$buf);
+		my \$data = \${thaw(\$buf)};
 
+		\$RPC::ToWorker::Callback::master =  # suppress used-once warning
 		\$RPC::ToWorker::Callback::master = \$master;
 
 		printf DEBUG "debug test %d\\n", __LINE__ if $debug;
@@ -421,7 +424,12 @@ sub ie_eof
 	$ioe->close();
 }
 
+
 package RPC::ToWorker::Master;
+
+#
+# This is on the master
+#
 
 use strict;
 use warnings;
@@ -437,7 +445,7 @@ sub send_initial_data
 	} else {
 		$self->{alldone}{master_go} = 1;
 
-		my $id = freeze($self->{data});
+		my $id = freeze(\($self->{data} || undef));
 
 		printf $ioe "go %d\n", length($id); # don't suicide
 
@@ -630,8 +638,8 @@ RPC::ToWorker - invoke remote perl functions asynchronously on remote systems
 	preload		=> [qw(List::Of Required::Modules )],
 	desc		=> 'remote job description',
 	eval		=> 'my ($data) = @_; code_to_run(); return(@values)',
-	when_done	=> sub { my (@values) = @_; },
-	all_done	=> \&callback_for_slave_process_is_finished,,
+	when_done	=> sub { my (@slave_return_values) = @_; },
+	all_done	=> \&callback_for_slave_process_is_finished,
 	error_handler	=> \&callback_for_STDERR_output_from_slave,
 	output_handler	=> \&callback_for_STDOUT_output_from_slave,
  );
@@ -643,7 +651,7 @@ RPC::ToWorker - invoke remote perl functions asynchronously on remote systems
 RPC::ToWorker provides a way to invoke a perl function
 on a remote system.   It starts the remote perl process, passes
 data to it, and runs arbitrary code.   It does this all with 
-asynchronous IO (using <IO::Event>) so that multiple
+asynchronous IO (using L<IO::Event>) so that multiple
 processes can run at the same time.
 
 The slave job on the remote system can also invoke functions
@@ -663,17 +671,18 @@ The remote hostname.
 
 B<Required>.
 Code to eval on the remote host.  Return values will be passed to
-C<when_done> code reference.
+C<when_done> code reference.  One argument will arrive in C<@_>: 
+the C<data> element from below.
 
 =item when_done
 
-B<Required>.
 Code reference to invoke with the return values from the C<eval>.
 
 =item data
 
 Data reference to pass to the remote process.  It will be 
-marshalled with Storable.
+marshalled with Storable.  This reference will be passed to the
+C<eval> code as is (arrays will not be expanded).
 
 =item chdir
 
@@ -690,11 +699,11 @@ Defaults to C<host:>.
 
 =item preload
 
-Modules to load, a list.
+Modules to load on the remote system, a list.
 
 =item prequel
 
-Code to eval prior to the main eval.  Cannot C<return>.
+Code to eval prior to the main eval.  Must not C<return>.
 
 =item error_handler($ioe)
 
@@ -736,6 +745,8 @@ Can this job be re-attempted?   Defaults to 1.
 
 =head1 LICENSE
 
+Copyright (C) 2007-2008 SearchMe, Inc.
+Copyright (C) 2011 Google, Inc.
 This package may be used and redistributed under the terms of either
 the Artistic 2.0 or LGPL 2.1 license.
 
