@@ -12,3 +12,4 @@ META.yml
 t/data/testcluster
 t/dohosts.t
 t/toworker.t
+README
