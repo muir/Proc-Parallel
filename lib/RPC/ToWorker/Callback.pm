@@ -52,17 +52,54 @@ __END__
 
  use RPC::ToWorker::Callback;
 
- @return_values = master_call('Packages To::Preload', 'remove_function_name', 'remote local data keys', $data);
+ @return_values = master_call('Some::Packages To::Preload', 'remote_function_name', 'remote local data keys', @data);
 
 =head1 DESCRIPTION
 
 Make a remote call to a function on the master node from a 
 slave process started with L<RPC::ToWorker>.
 
-The slaves are running sychronously, but the master is asychronous.
+This module is used in the worker, not the master.
+
+The slaves are running sychronously, but the master is asychronous so
+this is a blocking call on the slave.  Use this sparingly since the slave
+will have to wait.
+
+The calling parameters are:
+
+=over
+
+=item 1
+
+B<String or List>.
+A reference to a list or a 
+a space-separated list of modules to load on the master.
+
+=item 2
+
+B<String>.
+The name of the function to invoke on the master.
+
+=item 3
+
+B<String or List>.
+A reference to a list or a 
+A reference to a list or a 
+A space-separated list of keys from the optional C<local_data> parameter to the
+original C<do_remote_job> call that invoked the work process.   The keys and values corresponding
+to these keys till be appended to the list of arguments to the function.
+
+=item remainder
+
+B<anything>.
+Arguments to the function to invoke.
+
+=back
 
 =head1 LICENSE
 
+Copyright (C) 2007-2008 SearchMe, Inc.
+Copyright (C) 2011 Google, Inc.
 This package may be used and redistributed under the terms of either
 the Artistic 2.0 or LGPL 2.1 license.
 

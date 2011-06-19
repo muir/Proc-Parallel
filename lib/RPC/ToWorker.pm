@@ -18,7 +18,7 @@ use Scalar::Util qw(refaddr weaken);
 use Time::HiRes qw(time);
 require POSIX;
 
-our $VERSION = 0.5;
+our $VERSION = 0.601;
 
 our @EXPORT = qw(do_remote_job);
 our @ISA = qw(Exporter);
@@ -368,7 +368,7 @@ END_SLAVE2
 			\$0 = $q_perl{$av0} . 'returning failure';
 			print STDERR \$\@;
 			my \$err = freeze(\\\$\@);
-			printf \$master "DATA %d RETURN_ERROR\n%s", length(\$err), \$err;
+			printf \$master "DATA %d RETURN_ERROR\\n%s", length(\$err), \$err;
 			# exit 1; hangs
 			POSIX::_exit(1);
 		}
@@ -376,7 +376,7 @@ END_SLAVE2
 		\$0 = $q_perl{$av0} . 'returning results';
 
 		my \$ret = freeze(\\\@r);
-		printf \$master "DATA %d RETURN_VALUES\n%s", length(\$ret), \$ret;
+		printf \$master "DATA %d RETURN_VALUES\\n%s", length(\$ret), \$ret;
 
 		\$0 = $q_perl{$av0} . 'exiting';
 
@@ -703,7 +703,9 @@ Modules to load on the remote system, a list.
 
 =item prequel
 
-Code to eval prior to the main eval.  Must not C<return>.
+Code to eval prior to the main eval.  Must not C<return>.  This
+is a pre-amble.  Local variables can be delcared.  Modules can
+be loaded.   The main eval is inside a block.  This is not.
 
 =item error_handler($ioe)
 
@@ -735,13 +737,23 @@ shut down.
 =item local_data
 
 A hash of data that can be made available to 
-C<master_call()> invocations.
+C<master_call()> invocations.  See
+L<RPC::ToWorker::Callback>.
 
 =item can_retry
 
 Can this job be re-attempted?   Defaults to 1.
 
 =back
+
+=head1 SEE ALSO
+
+To make callbacks to the master from the worker slave,
+use C<RPC::ToWorker::Callback>.
+
+This module expects to exist with an L<IO::Event> select loop.
+This isn't much of a limitation since L<IO::Event::Any> layers
+over L<AnyEvent>.
 
 =head1 LICENSE
 

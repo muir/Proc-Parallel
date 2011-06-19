@@ -20,6 +20,8 @@ WriteMakefile(
 		'IO::Handle'			=> 0,
 		'List::Util'			=> 0,
 		'Tie::Function::Examples'	=> 0,
+		'Module::Load'			=> 0,
+		'Eval::LineNumbers'		=> 0,
 	},
 );
 
