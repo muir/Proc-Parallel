@@ -1,0 +1,3 @@
+
+Use B::Deparse to be able to send subroutines to remote perls
+
